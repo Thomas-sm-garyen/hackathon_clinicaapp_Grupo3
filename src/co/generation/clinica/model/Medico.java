@@ -1,8 +1,9 @@
 package co.generation.clinica.model;
 
+import co.generation.clinica.interfaces.Registrable;
 import java.util.Objects;
 
-public class Medico {
+public class Medico implements Registrable {
     private int id;
     private String nombre;
     private String apellido;
@@ -72,6 +73,18 @@ public class Medico {
     }
 
     @Override
+    public String getDatosRegistro() {
+        return this.toString();
+    }
+
+    @Override
+    public boolean esValido() {
+        return nombre != null && !nombre.trim().isEmpty() &&
+                apellido != null && !apellido.trim().isEmpty() &&
+                especialidad != null;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(nombre.toLowerCase(), apellido.toLowerCase());
     }
@@ -80,4 +93,5 @@ public class Medico {
     public String toString() {
         return "Dr. " + nombre + " " + apellido + " - " + especialidad;
     }
+
 }
