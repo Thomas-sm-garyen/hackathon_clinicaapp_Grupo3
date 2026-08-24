@@ -14,6 +14,7 @@ public class Paciente implements Registrable {
         setCedula(cedula);
         setNombre(nombre);
         setTelefono(telefono);
+        setApellido(apellido);
     }
 
     public Paciente(int id, String cedula, String nombre, String apellido, String telefono) {
