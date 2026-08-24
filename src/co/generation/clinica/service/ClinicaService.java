@@ -1,47 +1,67 @@
-
 package co.generation.clinica.service;
+
+import co.generation.clinica.interfaces.Consultable;
 import co.generation.clinica.model.Medico;
 import co.generation.clinica.model.Paciente;
 import co.generation.clinica.model.Turno;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-
-import co.generation.clinica.interfaces.Consultable;
-
 public class ClinicaService implements Consultable {
 
-    public List<Turno>turnos= new ArrayList<>();
+    public List<Turno> turnos = new ArrayList<>();
 
     @Override
-    public List <Turno> buscarPorMedico(Medico medico); {
+    public List<Turno> buscarPorMedico(Medico medico) {
         List<Turno> resultados = new ArrayList<>();
 
-        if (medico==null){
+        if (medico == null) {
             return resultados;
         }
-    
-    for (Turno m:this.turnos){
-        if (m.getMedico()!= null && m.getMedico().equals(medico)){
-            resultados.add(m);
+
+        for (Turno m : this.turnos) {
+            if (m.getMedico() != null && m.getMedico().equals(medico)) {
+                resultados.add(m);
+            }
         }
+
+        return resultados;
     }
-    
-    return resultados;
-    }
+
     @Override
-    public List<Turno> listarTurnosDelDia(LocalDate fecha){
-        List<Turno> resultados= new ArrayList<>();
+    public List<Turno> listarTurnosDelDia(LocalDate fecha) {
+        List<Turno> resultados = new ArrayList<>();
         if (fecha == null) return resultados;
-        for (Turno turno:turnos){
-            if(turno.getFechaHora().toLocalDate().equals(fecha)){
+
+        for (Turno turno : turnos) {
+            if (turno.getFechaHora().toLocalDate().equals(fecha)) {
                 resultados.add(turno);
-            };
-            resultados.sort(Comparator.comparing(Turno::getFechaHora));
-        };
+            }
+        }
+
+        // Se ordena la lista una sola vez fuera del bucle
+        resultados.sort(Comparator.comparing(Turno::getFechaHora));
+        return resultados;
+    }
+
+
+    @Override
+    public List<Turno> buscarPorPaciente(Paciente paciente) {
+        List<Turno> resultados = new ArrayList<>();
+
+        if (paciente == null) {
+            return resultados;
+        }
+
+        for (Turno t : this.turnos) {
+            if (t.getPaciente() != null && t.getPaciente().equals(paciente)) {
+                resultados.add(t);
+            }
+        }
+
         return resultados;
     }
 }
-

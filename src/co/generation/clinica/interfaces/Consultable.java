@@ -1,3 +1,4 @@
+package co.generation.clinica.interfaces;
 import co.generation.clinica.model.Medico;
 import co.generation.clinica.model.Paciente;
 import co.generation.clinica.model.Turno;
