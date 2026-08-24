@@ -1,11 +1,14 @@
 package co.generation.clinica;
 
+// 1. Importación actualizada para la clase DatosCSV
+import co.generation.clinica.datos.DatosCSV;
+
 import co.generation.clinica.model.Especialidad;
+import co.generation.clinica.model.EstadoTurno;
 import co.generation.clinica.model.Medico;
 import co.generation.clinica.model.Paciente;
 import co.generation.clinica.model.Turno;
 import co.generation.clinica.service.ClinicaService;
-//import co.generation.clinica.datos.DatosCSV;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,36 +17,67 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+
     public static void main(String[] args) {
-        // Secuencia en main():
         ClinicaService servicio = new ClinicaService();
-        //DatosCSV.cargar(servicio);
+
+        // Carga los archivos CSV de la carpeta datos/
+        DatosCSV.cargar(servicio);
+
         Scanner scanner = new Scanner(System.in);
         boolean salir = false;
-        // bucle while con Scanner para el menú...
 
         while (!salir) {
             mostrarMenu();
-            System.out.println("Seleccione una opción");
+            System.out.print("Seleccione una opción: ");
             String opcion = scanner.nextLine();
+
             switch (opcion) {
+                case "1":
+                    opcionRegistrarPaciente(servicio, scanner);
+                    break;
+                case "2":
+                    opcionRegistrarMedico(servicio, scanner);
+                    break;
+                case "3":
+                    opcionAsignarTurno(servicio, scanner);
+                    break;
+                case "4":
+                    opcionListarTurnosDelDia(servicio, scanner);
+                    break;
+                case "5":
+                    opcionCancelarTurno(servicio, scanner);
+                    break;
+                case "6":
+                    opcionVerTurnosPorMedico(servicio, scanner);
+                    break;
+                case "7":
+                    opcionVerTurnosPorPaciente(servicio, scanner);
+                    break;
+                case "8":
+                    opcionCambiarEstadoTurno(servicio, scanner);
+                    break;
+                case "9":
+                    servicio.listarPacientes();
+                    break;
+                case "10":
+                    servicio.listarMedicos();
+                    break;
                 case "0":
-                    //DatosCSV.guardar(servicio);
+                    // Guarda todos los cambios en los archivos CSV al salir
+                    DatosCSV.guardar(servicio);
                     System.out.println("Hasta pronto. Datos guardados.");
                     salir = true;
-                    break;
-                case"1":
-                    servicio.registrarPaciente();
-                case "3":
-                    asignarTurno(servicio,scanner);
                     break;
                 default:
                     System.out.println("Opción no válida. Intente nuevamente.");
             }
             System.out.println();
         }
+
         scanner.close();
     }
+
     private static void mostrarMenu() {
         System.out.println("-----------------------------------------");
         System.out.println("|          CLINICAAPP – MENÚ            |");
@@ -59,52 +93,153 @@ public class Main {
         System.out.println("|  9. Listar pacientes                  |");
         System.out.println("| 10. Listar médicos                    |");
         System.out.println("|  0. Salir                             |");
-        System.out.println("-----------------------------------------");
+        System.out.println("-----------------------------------------");}
+
+    private static void opcionRegistrarPaciente(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Cédula: ");
+        String cedula = scanner.nextLine();
+        System.out.print("Nombre: ");
+        String nombre = scanner.nextLine();
+        System.out.print("Apellido: ");
+        String apellido = scanner.nextLine();
+        System.out.print("Teléfono: ");
+        String telefono = scanner.nextLine();
+
+        Paciente paciente = new Paciente(cedula, nombre, apellido, telefono);
+        servicio.registrarPaciente(paciente);
     }
 
-    //OPCION 3
+    private static void opcionRegistrarMedico(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Nombre: ");
+        String nombre = scanner.nextLine();
+        System.out.print("Apellido: ");
+        String apellido = scanner.nextLine();
+        System.out.print("Especialidad (CARDIOLOGIA, URGENCIAS, etc.): ");
+        String espStr = scanner.nextLine();
 
-    private static void asignarTurno(ClinicaService servicio, Scanner scan){
-        System.out.println("\n--- ASIGNAR TURNO ---");
-        System.out.println("Ingresa la cédula del paciente");
-        String cedula = scan.nextLine();
-        Paciente paciente= servicio.buscarPorCedula(cedula);
+        try {
+            Especialidad especialidad = Especialidad.valueOf(espStr.toUpperCase());
+            Medico medico = new Medico(nombre, apellido, especialidad);
+            servicio.registrarMedico(medico);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: Especialidad no válida.");
+        }
+    }
+
+    private static void opcionAsignarTurno(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Cédula del paciente: ");
+        String cedula = scanner.nextLine();
+        Paciente paciente = servicio.buscarPorCedula(cedula);
+
         if (paciente == null) {
-            System.out.println("Error: No se encontró ningún paciente con esa cédula.");
+            System.out.println("Error: El paciente no está registrado.");
             return;
         }
-        System.out.print("Ingrese el nombre del médico: ");
-        String nombreMedico = scan.nextLine();
-        System.out.print("Ingrese el apellido del médico: ");
-        String apellidoMedico = scan.nextLine();
-        Medico medico = servicio.buscarPorNombreApellido(nombreMedico, apellidoMedico);
+
+        System.out.print("Nombre del médico: ");
+        String nombreM = scanner.nextLine();
+        System.out.print("Apellido del médico: ");
+        String apellidoM = scanner.nextLine();
+        Medico medico = servicio.buscarPorNombreApellido(nombreM, apellidoM);
 
         if (medico == null) {
-            System.out.println("Error: No se encontró ningún médico con ese nombre y apellido.");
+            System.out.println("Error: El médico no está registrado.");
             return;
         }
+
         try {
-            System.out.print("Ingrese el año (ej. 2026): ");
-            int anio = Integer.parseInt(scan.nextLine());
+            System.out.print("Año (ej. 2026): ");
+            int anio = Integer.parseInt(scanner.nextLine());
+            System.out.print("Mes (1-12): ");
+            int mes = Integer.parseInt(scanner.nextLine());
+            System.out.print("Día (1-31): ");
+            int dia = Integer.parseInt(scanner.nextLine());
+            System.out.print("Hora (0-23): ");
+            int hora = Integer.parseInt(scanner.nextLine());
+            System.out.print("Minuto (0-59): ");
+            int minuto = Integer.parseInt(scanner.nextLine());
 
-            System.out.print("Ingrese el mes (1-12): ");
-            int mes = Integer.parseInt(scan.nextLine());
-
-            System.out.print("Ingrese el día (1-31): ");
-            int dia = Integer.parseInt(scan.nextLine());
-
-            System.out.print("Ingrese la hora (0-23): ");
-            int hora = Integer.parseInt(scan.nextLine());
-
-            System.out.print("Ingrese los minutos (0-59): ");
-            int minuto = Integer.parseInt(scan.nextLine());
             LocalDateTime fechaHora = LocalDateTime.of(anio, mes, dia, hora, minuto);
             Turno nuevoTurno = new Turno(paciente, medico, fechaHora);
             servicio.asignarTurno(nuevoTurno);
-
-            System.out.println("¡Turno asignado con éxito!");
         } catch (Exception e) {
-            System.out.println("Error al ingresar los datos de fecha/hora. Verifique que los números sean válidos.");
+            System.out.println("Error: Fecha u hora inválida.");
+        }
+    }
+
+    private static void opcionListarTurnosDelDia(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Ingrese fecha (AAAA-MM-DD): ");
+        try {
+            LocalDate fecha = LocalDate.parse(scanner.nextLine());
+            List<Turno> turnos = servicio.listarTurnosDelDia(fecha);
+            imprimirTurnos(turnos);
+        } catch (DateTimeParseException e) {
+            System.out.println("Error: Formato de fecha inválido.");
+        }
+    }
+
+    private static void opcionCancelarTurno(ClinicaService servicio, Scanner scanner) {
+        try {
+            System.out.print("ID del turno a cancelar: ");
+            int id = Integer.parseInt(scanner.nextLine());
+            servicio.cancelarTurno(id);
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Debe ingresar un número de ID válido.");
+        }
+    }
+
+    private static void opcionVerTurnosPorMedico(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Nombre del médico: ");
+        String nombre = scanner.nextLine();
+        System.out.print("Apellido del médico: ");
+        String apellido = scanner.nextLine();
+
+        Medico medico = servicio.buscarPorNombreApellido(nombre, apellido);
+        if (medico == null) {
+            System.out.println("No existe un médico registrado con ese nombre y apellido.");
+            return;
+        }
+
+        List<Turno> turnos = servicio.buscarPorMedico(medico);
+        imprimirTurnos(turnos);
+    }
+
+    private static void opcionVerTurnosPorPaciente(ClinicaService servicio, Scanner scanner) {
+        System.out.print("Cédula del paciente: ");
+        String cedula = scanner.nextLine();
+
+        Paciente paciente = servicio.buscarPorCedula(cedula);
+        if (paciente == null) {
+            System.out.println("No existe un paciente registrado con esa cédula.");
+            return;
+        }
+
+        List<Turno> turnos = servicio.buscarPorPaciente(paciente);
+        imprimirTurnos(turnos);
+    }
+
+    private static void opcionCambiarEstadoTurno(ClinicaService servicio, Scanner scanner) {
+        try {
+            System.out.print("ID del turno: ");
+            int id = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Nuevo estado (PENDIENTE, ATENDIDO, CANCELADO): ");
+            String estadoStr = scanner.nextLine();
+            EstadoTurno nuevoEstado = EstadoTurno.valueOf(estadoStr.toUpperCase());
+
+            servicio.cambiarEstadoTurno(id, nuevoEstado);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: ID numérico o Estado no válido.");
+        }
+    }
+
+    private static void imprimirTurnos(List<Turno> turnos) {
+        if (turnos.isEmpty()) {
+            System.out.println("No se encontraron turnos registrados.");
+        } else {
+            for (Turno t : turnos) {
+                System.out.println(t);
+            }
         }
     }
 }
