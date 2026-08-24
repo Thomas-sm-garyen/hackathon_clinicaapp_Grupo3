@@ -1,25 +1,39 @@
 package co.generation.clinica.model;
-
 import co.generation.clinica.interfaces.Registrable;
+
 import java.util.Objects;
 
 public class Medico implements Registrable {
     private int id;
     private String nombre;
     private String apellido;
-    private Especialidad especialidad; // 1. Cambiado de String a Especialidad
-
-    // Constructor 1: Sin ID (registros desde menú)
+    private Especialidad especialidad;
     public Medico(String nombre, String apellido, Especialidad especialidad) {
-        setNombre(nombre);       // 3. Llama a los setters para validar y aplicar trim()
+        setNombre(nombre);
         setApellido(apellido);
         setEspecialidad(especialidad);
     }
-
-    // Constructor 2: Con ID (reconstrucción desde CSV)
     public Medico(int id, String nombre, String apellido, Especialidad especialidad) {
-        this(nombre, apellido, especialidad); // Reutiliza la lógica del primer constructor
-        setId(id);
+        this(nombre, apellido, especialidad);
+        this.id = id;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Medico medico = (Medico) obj;
+
+        return nombre.equalsIgnoreCase(medico.nombre) &&
+                apellido.equalsIgnoreCase(medico.apellido);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(nombre.toLowerCase(), apellido.toLowerCase());
+    }
+    @Override
+    public String toString() {
+        return "Dr. " + nombre + " " + apellido + " - " + especialidad;
     }
 
     public int getId() {
@@ -36,9 +50,9 @@ public class Medico implements Registrable {
 
     public void setNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío.");
+            throw new IllegalArgumentException("El nombre no puede ser nulo ni vacío.");
         }
-        this.nombre = nombre.trim(); // Se aplica trim() al guardar
+        this.nombre = nombre.trim();
     }
 
     public String getApellido() {
@@ -47,9 +61,9 @@ public class Medico implements Registrable {
 
     public void setApellido(String apellido) {
         if (apellido == null || apellido.trim().isEmpty()) {
-            throw new IllegalArgumentException("El apellido no puede estar vacío.");
+            throw new IllegalArgumentException("El apellido no puede ser nulo ni vacío.");
         }
-        this.apellido = apellido.trim(); // Se aplica trim() al guardar
+        this.apellido = apellido.trim();
     }
 
     public Especialidad getEspecialidad() {
@@ -64,34 +78,13 @@ public class Medico implements Registrable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Medico medico = (Medico) o;
-        return nombre.equalsIgnoreCase(medico.nombre) &&
-                apellido.equalsIgnoreCase(medico.apellido);
-    }
-
-    @Override
-    public String getDatosRegistro() {
+    public String getDatosRegistro(){
         return this.toString();
     }
-
     @Override
-    public boolean esValido() {
+    public boolean esValido(){
         return nombre != null && !nombre.trim().isEmpty() &&
                 apellido != null && !apellido.trim().isEmpty() &&
                 especialidad != null;
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nombre.toLowerCase(), apellido.toLowerCase());
-    }
-
-    @Override
-    public String toString() {
-        return "Dr. " + nombre + " " + apellido + " - " + especialidad;
-    }
-
 }
