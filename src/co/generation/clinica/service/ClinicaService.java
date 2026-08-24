@@ -14,6 +14,7 @@ public class ClinicaService implements Consultable {
 
     public List<Turno> turnos = new ArrayList<>();
     public List<Paciente> pacientes = new ArrayList<>();
+    private List<Medico> medicos = new ArrayList<>();
 
 
     public void registrarPaciente(Paciente a){
@@ -73,8 +74,66 @@ public class ClinicaService implements Consultable {
     }
 
 
+    //Medicos
 
+    public void registrarMedico(Medico m) {
+        if (!m.esValido()) {
+            System.out.println("Error: Los datos del médico están incompletos o son inválidos.");
+            return;
+        }
 
+        if (medicos.contains(m)) {
+            System.out.println("Error: Ya existe un médico con ese nombre y apellido.");
+            return;
+        }
+
+        int maxId = 0;
+        for (Medico medicoExistente : medicos) {
+            if (medicoExistente.getId() > maxId) {
+                maxId = medicoExistente.getId();
+            }
+        }
+        m.setId(maxId + 1);
+
+        medicos.add(m);
+        System.out.println("Médico registrado con éxito: " + m.getDatosRegistro());
+    }
+
+    public Medico buscarPorNombreApellido(String nombre, String apellido) {
+        for (Medico m : medicos) {
+            boolean mismoNombre = m.getNombre().equalsIgnoreCase(nombre);
+            boolean mismoApellido = m.getApellido().equalsIgnoreCase(apellido);
+
+            if (mismoNombre && mismoApellido) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public void listarMedicos() {
+        if (medicos.isEmpty()) {
+            System.out.println("No hay médicos registrados en este momento.");
+            return;
+        }
+
+        List<Medico> copiaMedicos = new ArrayList<>(medicos);
+
+        copiaMedicos.sort((m1, m2) -> {
+            int comparacionEspecialidad = m1.getEspecialidad().compareTo(m2.getEspecialidad());
+
+            if (comparacionEspecialidad != 0) {
+                return comparacionEspecialidad;
+            } else {
+                return m1.getApellido().compareTo(m2.getApellido());
+            }
+        });
+
+        System.out.println("\nLISTA DE MÉDICOS");
+        for (Medico m : copiaMedicos) {
+            System.out.println(m.toString());
+        }
+    }
 
     @Override
     public List<Turno> buscarPorMedico(Medico medico) {
